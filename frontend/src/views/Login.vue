@@ -91,8 +91,19 @@
         </form>
 
         <p class="text-center text-xs text-gray-500 mt-6">
-          Hubungi Secretary jika belum mempunyai user.
+          Belum punya akun?
+          <button
+            type="button"
+            @click="showRegister = true"
+            class="text-blue-600 hover:underline font-medium"
+          >
+            Register
+          </button>
         </p>
+        <RegisterModal
+          v-if="showRegister"
+          @close="showRegister = false"
+        />
       </div>
     </div>
   </div>
@@ -104,10 +115,11 @@ import { useRouter } from "vue-router";
 import { useAuthStore } from "@/stores/auth";
 import api from "@/services/api";
 import mugenBg from "@/assets/mugen-1.png";
+import RegisterModal from "@/components/RegisterModal.vue";
 
 const router = useRouter();
 const auth = useAuthStore();
-
+const showRegister = ref(false);
 const username = ref("");
 const password = ref("");
 const showPassword = ref(false);

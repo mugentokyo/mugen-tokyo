@@ -111,7 +111,6 @@ const auth = useAuthStore();
 const username = ref("");
 const password = ref("");
 const showPassword = ref(false);
-</script>
 
 const handleSubmit = async () => {
   console.log("LOGIN BUTTON CLICKED");

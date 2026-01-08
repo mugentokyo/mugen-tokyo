@@ -6,12 +6,22 @@ export type CartItem = {
   id: string;
   name: string;
   qty: number;
+  price: number;
 };
 
 export const usePrepareCartStore = defineStore("prepareCart", {
   state: () => ({
     items: [] as CartItem[],
   }),
+
+  getters: {
+    totalPrice: (state) => {
+      return state.items.reduce(
+        (total, item) => total + item.qty * item.price,
+        0
+      );
+    },
+  },
 
   actions: {
     add(item: CartItem) {
@@ -30,7 +40,13 @@ export const usePrepareCartStore = defineStore("prepareCart", {
 
     decrease(id: string) {
       const item = this.items.find(i => i.id === id);
-      if (item && item.qty > 1) item.qty--;
+      if (!item) return;
+
+      if (item.qty > 1) {
+        item.qty--;
+      } else {
+        this.remove(id);
+      }
     },
 
     remove(id: string) {

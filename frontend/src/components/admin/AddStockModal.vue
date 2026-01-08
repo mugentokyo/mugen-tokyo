@@ -3,8 +3,10 @@
     <div class="bg-white w-full max-w-md rounded-xl shadow-lg p-6">
       <!-- HEADER -->
       <div class="flex items-center justify-between mb-4">
-        <h3 class="text-lg font-semibold">➕ Tambah Stok</h3>
-        <button @click="$emit('close')" class="text-gray-400 hover:text-gray-600">
+        <h3 class="text-lg font-semibold">
+          {{ mode === "edit" ? "✏️ Edit Stok" : "➕ Tambah Stok" }}
+        </h3>
+        <button @click="emit('close')" class="text-gray-400 hover:text-gray-600">
           ✖
         </button>
       </div>
@@ -19,6 +21,7 @@
           <select
             v-model="selectedCategory"
             class="w-full border rounded-lg px-3 py-2"
+            :disabled="mode === 'edit'"
             required
           >
             <option value="" disabled>-- Pilih Kategori --</option>
@@ -40,7 +43,7 @@
           <select
             v-model="selectedItemId"
             class="w-full border rounded-lg px-3 py-2"
-            :disabled="!selectedCategory"
+            :disabled="mode === 'edit' || !selectedCategory"
             required
           >
             <option value="" disabled>
@@ -59,7 +62,7 @@
         <!-- QTY -->
         <div class="mb-4">
           <label class="block text-sm font-medium mb-1">
-            Tambah Stok
+            {{ mode === "edit" ? "Ubah Stok" : "Tambah Stok" }}
           </label>
           <input
             v-model.number="qty"
@@ -75,15 +78,15 @@
         <div class="flex justify-end gap-2">
           <button
             type="button"
-            @click="$emit('close')"
+            @click="emit('close')"
             class="px-4 py-2 rounded-lg border"
           >
             Batal
           </button>
           <button
-            @click="submit"
+            type="submit"
             class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700"
-            >
+          >
             Simpan
           </button>
         </div>
@@ -103,6 +106,11 @@ type Item = {
   stock: number;
 };
 
+const props = defineProps<{
+  mode?: "add" | "edit";
+  item?: Item;
+}>();
+
 const emit = defineEmits<{
   (e: "close"): void;
   (e: "success"): void;
@@ -121,14 +129,22 @@ const fetchItems = async () => {
   categories.value = [...new Set(res.data.map(i => i.category))];
 };
 
-onMounted(fetchItems);
+onMounted(async () => {
+  await fetchItems();
+
+  // MODE EDIT → auto isi & lock
+  if (props.mode === "edit" && props.item) {
+    selectedCategory.value = props.item.category;
+    selectedItemId.value = props.item._id;
+  }
+});
 
 // filter item
 const filteredItems = computed(() =>
   items.value.filter(i => i.category === selectedCategory.value)
 );
 
-// submit tambah stok
+// submit tambah / edit stok
 const submit = async () => {
   if (!selectedItemId.value || qty.value <= 0) {
     alert("Lengkapi data");

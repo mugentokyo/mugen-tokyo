@@ -45,6 +45,7 @@ type Item = {
   name: string;
   category: string;
   stock: number;
+  price: number;
   image?: string;
 };
 
@@ -94,9 +95,10 @@ const addToCart = (item: Item) => {
   if (item.stock <= 0) return;
 
   cart.add({
-    id: item._id,       // mapping Mongo _id → frontend id
+    id: item._id,
     name: item.name,
     qty: 1,
+    price: item.price,
   });
 };
 </script>

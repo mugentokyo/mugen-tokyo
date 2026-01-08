@@ -24,6 +24,10 @@
           {{ item.stock }}
         </span>
       </p>
+
+      <p class="font-semibold text-blue-600 mt-1">
+        $ {{ item.price.toLocaleString("id-ID") }}
+      </p>
     </div>
 
     <!-- ADD BUTTON -->
@@ -46,6 +50,7 @@ defineProps<{
     _id: string;
     name: string;
     stock: number;
+    price: number;
     image?: string;
   };
 }>();

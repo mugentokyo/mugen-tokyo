@@ -60,18 +60,24 @@
             <label class="text-sm font-medium text-gray-700">
               Password
             </label>
+
             <div class="relative">
               <input
                 v-model="password"
-                type="password"
+                :type="showPassword ? 'text' : 'password'"
                 placeholder="Password"
                 class="input pr-10"
               />
-              <span
-                class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400"
+
+              <button
+                type="button"
+                @click="showPassword = !showPassword"
+                class="absolute right-3 top-1/2 -translate-y-1/2
+                      text-gray-400 hover:text-gray-700"
               >
-                👁
-              </span>
+                <span v-if="showPassword">🙈</span>
+                <span v-else>👁</span>
+              </button>
             </div>
           </div>
 
@@ -104,6 +110,8 @@ const auth = useAuthStore();
 
 const username = ref("");
 const password = ref("");
+const showPassword = ref(false);
+</script>
 
 const handleSubmit = async () => {
   console.log("LOGIN BUTTON CLICKED");

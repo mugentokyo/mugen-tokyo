@@ -79,49 +79,47 @@
     <div v-if="tab === 'po'" class="bg-white rounded-xl shadow overflow-hidden">
       <table class="w-full text-sm">
         <thead class="bg-gray-100">
-          <tr>
+            <tr>
             <th class="p-3">Tanggal</th>
             <th class="p-3">No PO</th>
+            <th class="p-3">Item</th>
             <th class="p-3 text-center">Total Item</th>
+            <th class="p-3 text-center">Total Harga</th>
             <th class="p-3 text-center">Status</th>
-          </tr>
+            </tr>
         </thead>
 
         <tbody>
-          <tr
-            v-for="p in pos"
-            :key="p._id"
-            class="border-t"
-          >
+            <tr v-for="p in pos" :key="p._id" class="border-t">
+            <td class="p-3">{{ formatDate(p.createdAt) }}</td>
+
+            <td class="p-3 font-mono">{{ p.poNumber }}</td>
+
             <td class="p-3">
-              {{ formatDate(p.createdAt) }}
+                <div
+                v-for="(i, idx) in p.items"
+                :key="idx"
+                class="flex justify-between"
+                >
+                <span>{{ i.name }}</span>
+                <span class="text-gray-500">x{{ i.qty }}</span>
+                </div>
             </td>
 
-            <td class="p-3 font-mono">
-              {{ p.poNumber }}
-            </td>
+            <td class="p-3 text-center">{{ p.totalItems }}</td>
 
             <td class="p-3 text-center font-semibold">
-              {{ p.totalItems }}
+            {{ p.totalPrice ? `$${p.totalPrice.toLocaleString()}` : "-" }}
             </td>
 
             <td class="p-3 text-center">
-              <span
-                class="px-2 py-1 rounded text-xs"
-                :class="statusClassPO(p.status)"
-              >
+                <span :class="statusClass(p.status)">
                 {{ p.status }}
-              </span>
+                </span>
             </td>
-          </tr>
-
-          <tr v-if="!pos.length">
-            <td colspan="4" class="p-6 text-center text-gray-400">
-              Belum ada PO
-            </td>
-          </tr>
+            </tr>
         </tbody>
-      </table>
+        </table>
     </div>
   </div>
 </template>

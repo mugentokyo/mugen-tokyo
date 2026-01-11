@@ -145,8 +145,8 @@ const fetchData = async () => {
 
 onMounted(fetchData);
 
-const formatDate = (d: string) =>
-  new Date(d).toLocaleString("id-ID");
+const formatDate = (date: string) =>
+  new Date(date).toLocaleString("en-GB");
 
 const statusClass = (s: string) => {
   const map: any = {

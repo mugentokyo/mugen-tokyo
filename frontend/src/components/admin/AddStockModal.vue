@@ -36,40 +36,30 @@
         </div>
 
         <!-- ITEM -->
-        <div class="mb-4">
+        <div v-if="mode === 'edit'" class="mb-4">
           <label class="block text-sm font-medium mb-1">
-            Item
+            Nama Item
           </label>
-          <select
-            v-model="selectedItemId"
+          <input
+            v-model="itemName"
+            type="text"
             class="w-full border rounded-lg px-3 py-2"
-            :disabled="mode === 'edit' || !selectedCategory"
+            placeholder="Nama item"
             required
-          >
-            <option value="" disabled>
-              -- Pilih Item --
-            </option>
-            <option
-              v-for="item in filteredItems"
-              :key="item._id"
-              :value="item._id"
-            >
-              {{ item.name }} (stok: {{ item.stock }})
-            </option>
-          </select>
+          />
         </div>
 
         <!-- QTY -->
         <div class="mb-4">
           <label class="block text-sm font-medium mb-1">
-            {{ mode === "edit" ? "Ubah Stok" : "Tambah Stok" }}
+            {{ mode === "edit" ? "Stok Saat Ini" : "Tambah Stok" }}
           </label>
           <input
             v-model.number="qty"
             type="number"
-            min="1"
+            :min="mode === 'edit' ? 0 : 1"
             class="w-full border rounded-lg px-3 py-2"
-            placeholder="Masukkan jumlah"
+            :placeholder="mode === 'edit' ? 'Jumlah stok baru' : 'Masukkan jumlah'"
             required
           />
         </div>
@@ -96,9 +86,10 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from "vue";
+import { ref, computed, onMounted, inject } from "vue";
 import api from "@/services/api";
 
+const itemName = ref("");
 type Item = {
   _id: string;
   name: string;
@@ -116,6 +107,7 @@ const emit = defineEmits<{
   (e: "success"): void;
 }>();
 
+const toast = inject<any>("toast");
 const items = ref<Item[]>([]);
 const categories = ref<string[]>([]);
 const selectedCategory = ref("");
@@ -136,6 +128,8 @@ onMounted(async () => {
   if (props.mode === "edit" && props.item) {
     selectedCategory.value = props.item.category;
     selectedItemId.value = props.item._id;
+    itemName.value = props.item.name;
+    qty.value = props.item.stock; 
   }
 });
 
@@ -147,19 +141,27 @@ const filteredItems = computed(() =>
 // submit tambah / edit stok
 const submit = async () => {
   if (!selectedItemId.value || qty.value <= 0) {
-    alert("Lengkapi data");
+    toast.info("Lengkapi data");
     return;
   }
 
   try {
-    await api.put(`/items/${selectedItemId.value}/add-stock`, {
+    const payload: any = {
       qty: qty.value,
-    });
+    };
 
+    // jika mode edit → kirim juga nama
+    if (props.mode === "edit") {
+      payload.name = itemName.value;
+    }
+
+    await api.put(`/items/${selectedItemId.value}`, payload);
+
+    toast.success("✅ Item berhasil diperbarui");
     emit("success");
     emit("close");
   } catch (err) {
-    alert("❌ Gagal menyimpan stok");
+    toast.error("❌ Gagal menyimpan perubahan");
     console.error(err);
   }
 };

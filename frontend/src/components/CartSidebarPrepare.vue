@@ -57,17 +57,54 @@
 
     <button
       class="mt-4 w-full bg-green-600 text-white py-2 rounded-lg
-             hover:bg-green-700"
-      :disabled="cart.items.length === 0"
+            hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed"
+      :disabled="cart.items.length === 0 || loading"
+      @click="handleCheckout"
     >
-      Checkout
+      {{ loading ? "Processing..." : "Checkout" }}
     </button>
   </div>
 </template>
 
 <script setup lang="ts">
+import {ref, inject} from "vue"
+import api from "@/services/api";
 import { usePrepareCartStore } from "@/stores/prepareCart";
+import { useAuthStore } from "@/stores/auth";
 const cart = usePrepareCartStore();
+const toast = inject<any>("toast");
+
+const loading = ref(false);
+const auth = useAuthStore();
+const handleCheckout = async () => {
+  if (cart.items.length === 0) {
+    toast.error("Keranjang masih kosong");
+    return;
+  }
+  if (!auth.user?._id) {
+    toast.error("Silakan login terlebih dahulu");
+    return;
+  }
+  try {
+    await api.post("/purchases", {
+      user: {
+        id: auth.user._id, 
+      },
+      items: cart.items.map(i => ({
+        id: i.id,         
+        name: i.name,     
+        qty: i.qty,
+      })),
+    });
+
+    toast.success("Checkout berhasil");
+    cart.clear();
+  } catch (err: any) {
+    toast.error(err.response?.data?.message || "Checkout gagal");
+  } finally {
+    loading.value = false;
+  }
+};
 
 const formatUSD = (value: number) =>
   new Intl.NumberFormat("en-US", {

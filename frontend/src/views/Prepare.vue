@@ -2,15 +2,24 @@
   <div class="flex gap-6">
     <!-- LEFT CONTENT -->
     <div class="flex-1">
-      <h2 class="text-xl font-semibold mb-4">📦 Prepare</h2>
+      <h1 class="text-xl font-semibold mb-4">📦 Prepare</h1>
 
       <!-- FILTER KATEGORI -->
-      <select v-model="category" class="select mb-6">
-        <option value="">Semua Kategori</option>
-        <option v-for="c in categories" :key="c" :value="c">
-          {{ c }}
-        </option>
-      </select>
+      <div class="flex justify-end mb-6">
+        <select
+          v-model="category"
+          class="border rounded-lg px-3 py-2"
+        >
+          <option value="">Semua Kategori</option>
+          <option
+            v-for="c in categories"
+            :key="c"
+            :value="c"
+          >
+            {{ c }}
+          </option>
+        </select>
+      </div>
 
       <!-- GRID ITEMS -->
       <div class="grid grid-cols-2 md:grid-cols-3 gap-4">

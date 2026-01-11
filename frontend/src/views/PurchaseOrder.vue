@@ -1,18 +1,27 @@
 <template>
   <div class="flex gap-6">
-    <!-- KONTEN UTAMA -->
+    <!-- LEFT CONTENT -->
     <div class="flex-1">
-      <h2 class="text-2xl font-semibold mb-4">📄 Purchase Order</h2>
+      <h1 class="text-xl font-semibold mb-4">📄 Purchase Order</h1>
 
       <!-- FILTER KATEGORI -->
-      <select v-model="category" class="select mb-6">
-        <option value="">Semua Kategori</option>
-        <option v-for="c in categories" :key="c" :value="c">
-          {{ c }}
-        </option>
-      </select>
+      <div class="flex justify-end mb-6">
+        <select
+          v-model="category"
+          class="border rounded-lg px-3 py-2"
+        >
+          <option value="">Semua Kategori</option>
+          <option
+            v-for="c in categories"
+            :key="c"
+            :value="c"
+          >
+            {{ c }}
+          </option>
+        </select>
+      </div>
 
-      <!-- GRID ITEM -->
+      <!-- GRID ITEMS -->
       <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
         <ItemCard
           v-for="item in filteredItems"
@@ -23,58 +32,89 @@
       </div>
     </div>
 
-    <!-- CART SIDEBAR -->
+    <!-- RIGHT SIDEBAR -->
     <CartSidebarPO />
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from "vue";
+import { ref, computed, onMounted, onUnmounted } from "vue";
 import ItemCard from "@/components/ItemCard.vue";
 import CartSidebarPO from "@/components/CartSidebarPO.vue";
-import { usePOCart } from "@/stores/poCart";
 import api from "@/services/api";
+import { usePOCart } from "@/stores/poCart";
+const cart = usePOCart();
 
+/**
+ * TYPE ITEM DARI DATABASE
+ * (_id dari Mongo)
+ */
 type Item = {
   _id: string;
   name: string;
   category: string;
   stock: number;
+  price: number;
   image?: string;
 };
-
-const cart = usePOCart();
 
 const items = ref<Item[]>([]);
 const category = ref("");
 
-/** ambil data dari backend */
+let interval: number | undefined;
+
+/* ===============================
+   FETCH ITEMS (REALTIME)
+================================ */
+const fetchItems = async () => {
+  try {
+    const res = await api.get("/items");
+    items.value = res.data;
+  } catch (err) {
+    console.error("Gagal fetch items", err);
+  }
+};
+
 onMounted(async () => {
-  const res = await api.get("/items");
-  items.value = res.data;
+  await fetchItems();
+  interval = window.setInterval(fetchItems, 3000); // realtime tiap 3 detik
 });
 
-/** kategori unik */
+onUnmounted(() => {
+  if (interval) clearInterval(interval);
+});
+
+/* ===============================
+   COMPUTED
+================================ */
 const categories = computed(() => {
   return [...new Set(items.value.map(i => i.category))];
 });
 
-/** filter item */
 const filteredItems = computed(() => {
   return category.value
     ? items.value.filter(i => i.category === category.value)
     : items.value;
 });
 
-/** add ke cart PO */
+/* ===============================
+   ADD TO CART
+================================ */
 const addToCart = (item: Item) => {
-  cart.add(item);
+  if (item.stock <= 0) return;
+
+  cart.add({
+    id: item._id,
+    name: item.name,
+    qty: 1,
+    price: item.price,
+  });
 };
 </script>
 
 <style scoped>
 .select {
   @apply w-full border rounded-lg px-4 py-2
-    focus:outline-none focus:ring-2 focus:ring-yellow-500;
+         focus:outline-none focus:ring-2 focus:ring-blue-500;
 }
 </style>

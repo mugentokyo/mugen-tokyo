@@ -12,9 +12,10 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from "vue";
+import { ref, inject } from "vue";
 import api from "@/services/api";
 
+const toast = inject<any>("toast");
 const username = ref("");
 const password = ref("");
 
@@ -25,7 +26,7 @@ const submit = async () => {
     adminSecret: "superadmin123", // sementara
   });
 
-  alert("User berhasil ditambahkan");
+  toast.success("User berhasil ditambahkan");
   username.value = "";
   password.value = "";
 };

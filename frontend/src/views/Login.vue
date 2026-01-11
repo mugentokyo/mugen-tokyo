@@ -103,6 +103,7 @@
         <RegisterModal
           v-if="showRegister"
           @close="showRegister = false"
+          @success="showRegister = false"
         />
       </div>
     </div>
@@ -110,13 +111,14 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from "vue";
+import { ref, inject } from "vue";
 import { useRouter } from "vue-router";
 import { useAuthStore } from "@/stores/auth";
 import api from "@/services/api";
 import mugenBg from "@/assets/mugen-1.png";
 import RegisterModal from "@/components/RegisterModal.vue";
 
+const toast = inject<any>("toast");
 const router = useRouter();
 const auth = useAuthStore();
 const showRegister = ref(false);
@@ -125,7 +127,6 @@ const password = ref("");
 const showPassword = ref(false);
 
 const handleSubmit = async () => {
-  console.log("LOGIN BUTTON CLICKED");
 
   try {
     const res = await api.post("/auth/login", {
@@ -133,17 +134,21 @@ const handleSubmit = async () => {
       password: password.value,
     });
 
-    console.log("LOGIN RESPONSE:", res.data);
-
-    auth.login(res.data.user);
+    auth.login({
+      _id: res.data.user.id,        
+      username: res.data.user.username,
+      role: res.data.user.role,
+    });
 
     if (res.data.user.role === "admin") {
+      toast.success("Login berhasil");
       router.push("/admin");
     } else {
+      toast.success("Login berhasil");
       router.push("/dashboard");
     }
   } catch (err) {
-    alert("Login gagal");
+    toast.error("Login gagal");
     console.error(err);
   }
 };

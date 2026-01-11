@@ -8,8 +8,18 @@
     <div>
       <!-- HEADER -->
       <div class="px-6 py-5 border-b border-yellow-500/20">
-        <h1 class="text-lg font-bold">Mugen System</h1>
-        <p class="text-xs text-gray-400">Admin Panel</p>
+        <div class="flex items-center gap-3 mb-6">
+          <img
+            src="/public/mugen-1.png"
+            alt="Mugen Logo"
+            class="w-7 h-7 object-contain"
+          />
+
+          <div class="flex flex-col leading-tight">
+            <h1 class="text-lg font-bold">Mugen System</h1>
+            <p class="text-xs text-gray-400">Admin Panel</p>
+          </div>
+        </div>
         <!-- LOGOUT (BOTTOM LEFT) -->
         <div class="px-3 pb-4">
           <button

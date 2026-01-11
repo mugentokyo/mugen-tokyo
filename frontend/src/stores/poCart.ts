@@ -2,34 +2,62 @@ import { defineStore } from "pinia";
 import api from "@/services/api";
 import { useAuthStore } from "./auth";
 
-export const usePOCart = defineStore("poCart", {
+export type CartItem = {
+  id: string;
+  name: string;
+  qty: number;
+  price: number;
+};
+
+export const usePOCart= defineStore("poCart", {
   state: () => ({
-    items: [] as { _id: string; name: string; qty: number }[],
+    items: [] as CartItem[],
   }),
 
+  getters: {
+    totalPrice: (state) => {
+      return state.items.reduce(
+        (total, item) => total + item.qty * item.price,
+        0
+      );
+    },
+  },
+
   actions: {
-    add(item: { _id: string; name: string }) {
-      const found = this.items.find(i => i._id === item._id);
-      if (found) found.qty++;
-      else this.items.push({ _id: item._id, name: item.name, qty: 1 });
+    add(item: CartItem) {
+      const existing = this.items.find(i => i.id === item.id);
+      if (existing) {
+        existing.qty += item.qty;
+      } else {
+        this.items.push({ ...item });
+      }
     },
 
     increase(id: string) {
-      const item = this.items.find(i => i._id === id);
+      const item = this.items.find(i => i.id === id);
       if (item) item.qty++;
     },
 
     decrease(id: string) {
-      const item = this.items.find(i => i._id === id);
+      const item = this.items.find(i => i.id === id);
       if (!item) return;
 
-      item.qty--;
-      if (item.qty <= 0) {
-        this.items = this.items.filter(i => i._id !== id);
+      if (item.qty > 1) {
+        item.qty--;
+      } else {
+        this.remove(id);
       }
     },
 
-    async createPO() {
+    remove(id: string) {
+      this.items = this.items.filter(i => i.id !== id);
+    },
+
+    clear() {
+      this.items = [];
+    },
+
+    async checkout() {
       const auth = useAuthStore();
 
       await api.post("/po", {
@@ -37,7 +65,7 @@ export const usePOCart = defineStore("poCart", {
         items: this.items,
       });
 
-      this.items = [];
+      this.clear();
     },
   },
 });

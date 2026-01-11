@@ -66,7 +66,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from "vue";
+import { ref, inject } from "vue";
 import api from "@/services/api";
 
 const emit = defineEmits<{
@@ -75,14 +75,14 @@ const emit = defineEmits<{
 }>();
 
 const categories = ["senjata", "ammo", "obat", "vest"];
-
+const toast = inject<any>("toast");
 const category = ref("");
 const name = ref("");
 const stock = ref<number>(0);
 
 const submit = async () => {
   if (!category.value || !name.value) {
-    alert("Lengkapi data item");
+    toast.info("Lengkapi data item");
     return;
   }
 
@@ -96,7 +96,7 @@ const submit = async () => {
     emit("success");
     emit("close");
   } catch (err) {
-    alert("❌ Gagal menambahkan item");
+    toast.error("❌ Gagal menambahkan item");
     console.error(err);
   }
 };
